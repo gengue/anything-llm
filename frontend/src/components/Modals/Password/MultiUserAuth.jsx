@@ -8,6 +8,7 @@ import { useModal } from "@/hooks/useModal";
 import RecoveryCodeModal from "@/components/Modals/DisplayRecoveryCodeModal";
 import { useTranslation } from "react-i18next";
 import { t } from "i18next";
+import SocialProviders from "./SocialProviders";
 
 const RecoveryForm = ({ onSubmit, setShowRecoveryForm }) => {
   const [username, setUsername] = useState("");
@@ -282,7 +283,7 @@ export default function MultiUserAuth() {
     <>
       <form onSubmit={handleLogin}>
         <div className="flex flex-col justify-center items-center relative rounded-2xl md:bg-login-gradient md:shadow-[0_4px_14px_rgba(0,0,0,0.25)] md:px-12 py-12 -mt-4 md:mt-0">
-          <div className="flex items-start justify-between pt-11 pb-9 rounded-t">
+          <div className="flex items-start justify-between pt-32 pb-4 2xl:pt-11 rounded-t">
             <div className="flex items-center flex-col gap-y-4">
               <div className="flex gap-x-1">
                 <h3 className="text-md md:text-2xl font-bold text-white text-center white-space-nowrap hidden md:block">
@@ -298,6 +299,12 @@ export default function MultiUserAuth() {
               </p>
             </div>
           </div>
+          <SocialProviders
+            setError={setError}
+            setLoading={setLoading}
+            setUser={setUser}
+            setToken={setToken}
+          />
           <div className="w-full px-4 md:px-12">
             <div className="w-full flex flex-col gap-y-4">
               <div className="w-screen md:w-full md:px-0 px-6">

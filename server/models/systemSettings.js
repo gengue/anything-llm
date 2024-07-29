@@ -27,6 +27,8 @@ const SystemSettings = {
     "text_splitter_chunk_overlap",
     "agent_search_provider",
     "default_agent_skills",
+    "users_can_login_with_google",
+    "allowed_domain",
     "agent_sql_connections",
     "custom_app_name",
 
@@ -150,7 +152,7 @@ const SystemSettings = {
       }
     },
   },
-  currentSettings: async function () {
+  currentSettings: async function() {
     const { hasVectorCachedFiles } = require("../utils/files");
     const llmProvider = process.env.LLM_PROVIDER;
     const vectorDB = process.env.VECTOR_DB;
@@ -219,10 +221,19 @@ const SystemSettings = {
       AgentBingSearchApiKey: !!process.env.AGENT_BING_SEARCH_API_KEY || null,
       AgentSerplyApiKey: !!process.env.AGENT_SERPLY_API_KEY || null,
       AgentSearXNGApiUrl: process.env.AGENT_SEARXNG_API_URL || null,
+
+      // --------------------------------------------------------
+      // Social Providers
+      // --------------------------------------------------------
+      GoogleAuthClientId:
+        (await this.get({ label: "users_can_login_with_google" }))?.value ===
+          "true"
+          ? process.env.GOOGLE_AUTH_CLIENT_ID
+          : null,
     };
   },
 
-  get: async function (clause = {}) {
+  get: async function(clause = {}) {
     try {
       const setting = await prisma.system_settings.findFirst({ where: clause });
       return setting || null;
@@ -232,7 +243,7 @@ const SystemSettings = {
     }
   },
 
-  getValueOrFallback: async function (clause = {}, fallback = null) {
+  getValueOrFallback: async function(clause = {}, fallback = null) {
     try {
       return (await this.get(clause))?.value ?? fallback;
     } catch (error) {
@@ -241,7 +252,7 @@ const SystemSettings = {
     }
   },
 
-  where: async function (clause = {}, limit) {
+  where: async function(clause = {}, limit) {
     try {
       const settings = await prisma.system_settings.findMany({
         where: clause,
@@ -257,7 +268,7 @@ const SystemSettings = {
   // Can take generic keys and will pre-filter invalid keys
   // from the set before sending to the explicit update function
   // that will then enforce validations as well.
-  updateSettings: async function (updates = {}) {
+  updateSettings: async function(updates = {}) {
     const validFields = Object.keys(updates).filter((key) =>
       this.supportedFields.includes(key)
     );
@@ -273,7 +284,7 @@ const SystemSettings = {
   // Explicit update of settings + key validations.
   // Only use this method when directly setting a key value
   // that takes no user input for the keys being modified.
-  _updateSettings: async function (updates = {}) {
+  _updateSettings: async function(updates = {}) {
     try {
       const updatePromises = [];
       for (const key of Object.keys(updates)) {
@@ -308,7 +319,7 @@ const SystemSettings = {
     }
   },
 
-  isMultiUserMode: async function () {
+  isMultiUserMode: async function() {
     try {
       const setting = await this.get({ label: "multi_user_mode" });
       return setting?.value === "true";
@@ -318,7 +329,7 @@ const SystemSettings = {
     }
   },
 
-  currentLogoFilename: async function () {
+  currentLogoFilename: async function() {
     try {
       const setting = await this.get({ label: "logo_filename" });
       return setting?.value || null;
@@ -328,7 +339,7 @@ const SystemSettings = {
     }
   },
 
-  hasEmbeddings: async function () {
+  hasEmbeddings: async function() {
     try {
       const { Document } = require("./documents");
       const count = await Document.count({}, 1);
@@ -339,7 +350,7 @@ const SystemSettings = {
     }
   },
 
-  vectorDBPreferenceKeys: function () {
+  vectorDBPreferenceKeys: function() {
     return {
       // Pinecone DB Keys
       PineConeKey: !!process.env.PINECONE_API_KEY,
@@ -373,7 +384,7 @@ const SystemSettings = {
     };
   },
 
-  llmPreferenceKeys: function () {
+  llmPreferenceKeys: function() {
     return {
       // OpenAI Keys
       OpenAiKey: !!process.env.OPEN_AI_KEY,
@@ -482,7 +493,7 @@ const SystemSettings = {
 
   // For special retrieval of a key setting that does not expose any credential information
   brief: {
-    agent_sql_connections: async function () {
+    agent_sql_connections: async function() {
       const setting = await SystemSettings.get({
         label: "agent_sql_connections",
       });
@@ -493,7 +504,7 @@ const SystemSettings = {
       });
     },
   },
-  getFeatureFlags: async function () {
+  getFeatureFlags: async function() {
     return {
       experimental_live_file_sync:
         (await SystemSettings.get({ label: "experimental_live_file_sync" }))
